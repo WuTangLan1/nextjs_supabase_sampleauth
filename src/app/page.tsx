@@ -38,8 +38,8 @@ export default function Home() {
       }`}
     >
       <nav
-        className={`fixed top-4 flex items-center justify-center bg-white dark:bg-gray-800 py-3 px-5 rounded-full shadow-lg transition-all duration-300 ease-in-out z-50 ${
-          isExpanded ? "gap-8" : "gap-2"
+         className={`fixed top-4 flex items-center justify-center bg-white dark:bg-gray-800 py-2 px-4 max-w-xs rounded-full shadow-lg transition-all duration-300 ease-in-out z-50 ${
+    isExpanded ? "gap-6" : "gap-2"
         }`}
       >
         <button
