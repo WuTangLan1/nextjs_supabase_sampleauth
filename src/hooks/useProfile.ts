@@ -1,9 +1,10 @@
 // src/hooks/useProfile.ts
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { ProfileData } from '../types'; // Assuming ProfileData is defined in your types
 
 export const useProfile = () => {
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -13,7 +14,7 @@ export const useProfile = () => {
   // Fetch user profile from Supabase
   const fetchProfile = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('profiles').select('*').single();
+    const { data, error } = await supabase.from('users').select('*').single();
 
     if (error) {
       console.error('Error fetching profile:', error.message);
@@ -25,9 +26,9 @@ export const useProfile = () => {
   };
 
   // Update user profile
-  const updateProfile = async (updates: any) => {
+  const updateProfile = async (updates: ProfileData) => {
     setLoading(true);
-    const { error } = await supabase.from('profiles').upsert(updates, { returning: 'minimal' });
+    const { error } = await supabase.from('users').upsert(updates);
 
     if (error) {
       console.error('Error updating profile:', error.message);

@@ -35,9 +35,10 @@ export const useAuth = () => {
         console.error('Error inserting profile data:', profileError.message);
         return;
       }
-    }
 
-    setUser({ id: data.user.id, email: data.user.email }); 
+      // Add null check for data.user before setting user state
+      setUser({ id: data.user.id, email: data.user.email || '' });
+    }
   };
 
   // Login Function
@@ -54,7 +55,10 @@ export const useAuth = () => {
       return;
     }
 
-    setUser({ id: data.user.id, email: data.user.email });
+    // Add null check for data.user before setting user state
+    if (data.user) {
+      setUser({ id: data.user.id, email: data.user.email || '' });
+    }
   };
 
   // Logout Function

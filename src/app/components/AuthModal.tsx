@@ -25,11 +25,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     } else {
       // Include additional fields for sign-up
       await signUp(email, password, {
+        id: '', // Assuming 'id' is generated server-side; adjust if needed
+        email: email, // Include the email explicitly
         full_name: fullName,
         phone_number: phoneNumber,
         description: description,
         profile_photo_url: profilePhotoUrl,
       });
+      
     }
     onClose();
   };
@@ -44,22 +47,23 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         onClick={onClose}
       ></div>
 
-      {/* Modal */}
-      <div
-        className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg relative z-10 max-w-lg w-full animate-fadeIn"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="auth-modal-title"
-      >
+        <div
+          className={`bg-white dark:bg-gray-800 p-6 rounded-t-lg shadow-lg relative z-10 max-w-sm w-full max-h-[85vh] sm:rounded-lg sm:max-h-none overflow-y-auto mt-4`}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="auth-modal-title"
+        >
+
         <h2
           id="auth-modal-title"
-          className="text-3xl font-extrabold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 drop-shadow-md"
+          className="text-2xl md:text-3xl font-extrabold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 drop-shadow-md"
         >
           {isLogin ? "Login to Your Account" : "Create a New Account"}
         </h2>
 
+
         {/* Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {!isLogin && (
             <>
               <input
@@ -110,8 +114,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             required
           />
           <button
-            type="submit"
-            className="p-3 rounded bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-purple-500 hover:to-blue-500 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
+ type="submit"
+  className="p-3 rounded bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-purple-500 hover:to-blue-500 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
             disabled={loading}
           >
             {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
@@ -149,10 +153,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-2 right-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-all"
+          className="absolute top-3 right-3 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-all p-1"
         >
           &times;
         </button>
+
       </div>
 
       {/* Animation Styles */}
