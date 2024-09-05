@@ -1,6 +1,7 @@
 // src/components/AuthModal.tsx
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { supabase } from "@/lib/supabaseClient";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -15,27 +16,56 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [description, setDescription] = useState("");
-  const [profilePhotoUrl, setProfilePhotoUrl] = useState("");
+  const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (isLogin) {
-      await signIn(email, password);
-    } else {
-      // Include additional fields for sign-up
-      await signUp(email, password, {
-        id: '', // Assuming 'id' is generated server-side; adjust if needed
-        email: email, // Include the email explicitly
-        full_name: fullName,
-        phone_number: phoneNumber,
-        description: description,
-        profile_photo_url: profilePhotoUrl,
-      });
-      
-    }
-    onClose();
-  };
+      e.preventDefault();
+    
+      let profilePhotoUrlString = '';
+    
+      // Upload the profile photo if a file is selected
+      if (profilePhotoFile) {
+        const sanitizedFileName = encodeURIComponent(profilePhotoFile.name);
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('profile-photos')
+          .upload(`public/${sanitizedFileName}`, profilePhotoFile, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+        
+    
+        if (uploadError) {
+          console.error('Error uploading file:', uploadError.message);
+          return;
+        }
+    
+        // Get the public URL of the uploaded file
+        if (uploadData) {
+          const { data: urlData } = supabase.storage
+            .from('profile-photos')
+            .getPublicUrl(uploadData.path);
+    
+          profilePhotoUrlString = urlData?.publicUrl || '';
+        }
+      }
+    
+      if (isLogin) {
+        await signIn(email, password);
+      } else {
+        // Include additional fields for sign-up with uploaded photo URL
+        await signUp(email, password, {
+          id: '', // Adjust if needed
+          email: email,
+          full_name: fullName,
+          phone_number: phoneNumber,
+          description: description,
+          profile_photo_url: profilePhotoUrlString,
+        });
+      }
+      onClose();
+    };
+  
 
   if (!isOpen) return null;
 
@@ -71,30 +101,31 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 placeholder="Full Name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
-                required
+                className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-white"
               />
+
               <input
                 type="text"
                 placeholder="Phone Number"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
+                className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-white"
               />
+
               <input
                 type="text"
                 placeholder="Description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
+                className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-white"
               />
               <input
-                type="url"
-                placeholder="Profile Photo URL"
-                value={profilePhotoUrl}
-                onChange={(e) => setProfilePhotoUrl(e.target.value)}
+                type="file"
+                accept="image/*"
+                onChange={(e) => setProfilePhotoFile(e.target.files ? e.target.files[0] : null)}
                 className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
               />
+
             </>
           )}
           <input
@@ -102,20 +133,21 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
+            className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-white"
             required
           />
+
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="p-3 rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-3 rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             required
           />
           <button
- type="submit"
-  className="p-3 rounded bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-purple-500 hover:to-blue-500 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+            type="submit"
+            className="p-3 rounded bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-purple-500 hover:to-blue-500 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
             disabled={loading}
           >
             {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
