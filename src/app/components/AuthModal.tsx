@@ -12,13 +12,24 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { signUp, signIn, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [description, setDescription] = useState("");
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (isLogin) {
       await signIn(email, password);
     } else {
-      await signUp(email, password);
+      // Include additional fields for sign-up
+      await signUp(email, password, {
+        full_name: fullName,
+        phone_number: phoneNumber,
+        description: description,
+        profile_photo_url: profilePhotoUrl,
+      });
     }
     onClose();
   };
@@ -29,7 +40,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     <div className="fixed inset-0 flex items-center justify-center z-50">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black opacity-50 transition-opacity duration-300"
+        className="absolute inset-0 bg-black opacity-50 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
       ></div>
 
@@ -42,19 +53,52 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       >
         <h2
           id="auth-modal-title"
-          className="text-2xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500"
+          className="text-3xl font-extrabold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 drop-shadow-md"
         >
           {isLogin ? "Login to Your Account" : "Create a New Account"}
         </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {!isLogin && (
+            <>
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Phone Number"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
+              />
+              <input
+                type="text"
+                placeholder="Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
+              />
+              <input
+                type="url"
+                placeholder="Profile Photo URL"
+                value={profilePhotoUrl}
+                onChange={(e) => setProfilePhotoUrl(e.target.value)}
+                className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
+              />
+            </>
+          )}
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="p-3 rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-3 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
             required
           />
           <input
@@ -79,20 +123,33 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <button
             type="button"
             onClick={() => setIsLogin(!isLogin)}
-            className="text-blue-500 hover:underline transition-all duration-200"
+            className="relative inline-flex items-center justify-center p-2 text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 hover:from-purple-500 hover:to-blue-500 transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none"
           >
-            {isLogin
-              ? "Don't have an account? Sign Up"
-              : "Already have an account? Login"}
+            {isLogin ? (
+              <>
+                <span className="underline underline-offset-4">Don’t have an account?</span> 
+                <span className="ml-1 text-blue-500 hover:text-purple-500">
+                  Sign Up
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="underline underline-offset-4">Already have an account?</span> 
+                <span className="ml-1 text-blue-500 hover:text-purple-500">
+                  Login
+                </span>
+              </>
+            )}
           </button>
         </div>
+
 
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          className="absolute top-2 right-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-all"
         >
           &times;
         </button>
@@ -100,14 +157,21 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
       {/* Animation Styles */}
       <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
+        .loader {
+          border: 4px solid rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          border-top: 4px solid #ffffff;
+          width: 20px;
+          height: 20px;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
           }
-          to {
-            opacity: 1;
-            transform: translateY(0);
+          100% {
+            transform: rotate(360deg);
           }
         }
         .animate-fadeIn {
